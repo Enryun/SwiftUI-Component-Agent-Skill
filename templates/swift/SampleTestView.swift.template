@@ -1,0 +1,44 @@
+//
+//  {ComponentName}TestView.swift
+//  SampleCode
+//
+
+import SwiftUI
+import {ModuleName}
+
+struct {ComponentName}TestView: View {
+
+    @State private var value = ""
+    @State private var isValid = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                Section("Default") {
+                    {ComponentName}(title: "Field", value: $value)
+                }
+
+                Section("Custom config") {
+                    {ComponentName}(
+                        title: "Field",
+                        value: $value,
+                        config: .init(accentColor: .blue)
+                    )
+                }
+
+                Section("With modifier") {
+                    {ComponentName}(title: "Field", value: $value)
+                        .exampleFeatureEnabled(true)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("{ComponentName}")
+    }
+}
+
+#Preview {
+    NavigationStack {
+        {ComponentName}TestView()
+    }
+}

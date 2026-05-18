@@ -1,0 +1,23 @@
+//
+//  {ComponentName}+EnvironmentKey.swift
+//  {ModuleName}
+//
+
+import SwiftUI
+
+struct {ComponentName}ExampleFeatureEnabled: EnvironmentKey {
+    static var defaultValue: Bool = false
+}
+
+extension EnvironmentValues {
+    var exampleFeatureEnabled: Bool {
+        get { self[{ComponentName}ExampleFeatureEnabled.self] }
+        set { self[{ComponentName}ExampleFeatureEnabled.self] = newValue }
+    }
+}
+
+public extension View {
+    func exampleFeatureEnabled(_ enabled: Bool = true) -> some View {
+        environment(\.exampleFeatureEnabled, enabled)
+    }
+}

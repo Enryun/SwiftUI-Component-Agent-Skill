@@ -1,0 +1,25 @@
+---
+description: SwiftUI SDK component authoring — API, state, samples
+alwaysApply: false
+---
+
+# SwiftUI SDK component
+
+Use the **swiftui-sdk-component** skill when adding or changing reusable controls in a SwiftUI package.
+
+## The six foundations (never skip)
+
+1. What it is vs how it looks → `Config` only for appearance
+2. Own state deliberately → `Binding` / `@State` / Environment
+3. Modifiers over giant inits → `EnvironmentKey`
+4. Composition, not inheritance → system controls + subviews
+5. Stable public API → minimal `public`, doc example
+6. Sensible defaults → zero-config works; sample “Default” section
+
+Propose API + **foundation review** + file tree before creating files.
+
+## Not for app screens
+
+Feature scaffolding (ViewModel, UseCase) → **swiftui-architecture** skill.
+
+Full spec: install `swiftui-sdk-component` from SwiftUI-Component-Agent-Skill or project `.cursor/skills/`.

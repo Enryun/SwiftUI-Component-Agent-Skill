@@ -1,0 +1,58 @@
+//
+//  {ComponentName}.swift
+//  {ModuleName}
+//
+
+import SwiftUI
+
+/// One-line summary of {ComponentName}.
+///
+/// ## Modifiers:
+/// - `exampleModifier`: Describe behavior.
+///
+/// ## Usage Example:
+/// ```swift
+/// struct ContentView: View {
+///     @State private var value = ""
+///     var body: some View {
+///         {ComponentName}(title: "Label", value: $value)
+///     }
+/// }
+/// ```
+public struct {ComponentName}: View {
+
+    private var title: String
+    @Binding private var value: String
+    private var config: Config
+
+    @Environment(\.exampleFeatureEnabled) private var exampleFeatureEnabled
+    @State private var hasInteracted = false
+
+    public init(
+        title: String,
+        value: Binding<String>,
+        config: Config = .init()
+    ) {
+        self.title = title
+        self._value = value
+        self.config = config
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading) {
+            // Compose system controls; extract subviews when body grows.
+            TextField(title, text: $value)
+                .onChange(of: value) { _ in
+                    if !hasInteracted { hasInteracted = true }
+                }
+        }
+    }
+
+    public struct Config {
+        private(set) var accentColor: Color
+
+        public init(accentColor: Color = .primary) {
+            self.accentColor = accentColor
+        }
+    }
+}
