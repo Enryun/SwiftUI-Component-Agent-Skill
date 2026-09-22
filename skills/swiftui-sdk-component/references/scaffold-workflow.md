@@ -1,304 +1,88 @@
-# Scaffold workflow (full)
+# Component workflow
 
-Use when **creating** or **substantially extending** a public SDK component.
+Use this workflow for creating or substantially extending a public component. Scale the detail to the change.
 
-## Why phases?
+## 1. Inspect and design
 
-| Phase | Purpose |
-|-------|---------|
-| **Phase 1 — Propose** | Align on API, state, foundations, and files **before** code. Prevents wrong `public` surface, giant inits, and missing samples. |
-| **Phase 2 — Implement** | Build the approved mechanisms in dependency order, then docs and sample. |
-| **Phase 3 — Review** | Verify six foundations and ship gate before merge. |
+Read the host's instructions, target settings, nearby components, existing public API, and sample/test conventions. Review all six foundations internally; communicate the decisions that matter.
 
-**Rule:** Do not create or edit component source files during Phase 1. Do not skip Phase 1 for “small” components.
+For a new component, outline:
 
----
+- Responsibility and intended consumers.
+- Required values, editable bindings, local state, and any justified callbacks.
+- Public initializer and customization API; apply preferred patterns when their conditions hold.
+- Modifier names, affected component family, per-instance versus inherited scope, defaults, and override behavior.
+- Files needed, including a consumer example in the host's existing sample/preview arrangement.
+- Platform/toolchain constraints and relevant interaction or accessibility cases.
 
-## Phase 1 — Propose (no file creation)
+Do not add Config, environment keys, helper types, or sample apps solely to fill this outline.
 
-Output a single **proposal document** in the chat (or PR description). Wait for explicit user approval.
+### Authorization
 
-### 1.1 Identity
+A request to implement or fix already authorizes ordinary work within that scope. Briefly state the approach and continue; do not require a separate approval for every component or file.
 
-- [ ] **Component name** — `PascalCase` noun (`PinCodeField`, `ValidationTextField`)
-- [ ] **One-sentence responsibility** — what the control does, not how it looks
-- [ ] **Package module** — e.g. `CommonSwiftUI`
-- [ ] **Category** — TextField, Alert, Button, etc. (for folder + sample grouping)
+Stop after the proposal only when the user requested proposal-only work. Ask a focused question when a material unresolved choice changes the public contract or would expand scope, such as an unrequested breaking change or dependency. Honor prior decisions and approval; do not ask again.
 
-### 1.2 Behavior spec
+For a small compatible edit, a short explanation is enough. For an authorized breaking change, explain compatibility and migration implications before implementation.
 
-- [ ] **Inputs** — what the parent provides (bindings, callbacks, config)
-- [ ] **Outputs** — what the parent learns (validity, selection, events)
-- [ ] **User interactions** — tap, drag, focus, secure toggle, clear
-- [ ] **Edge cases** — empty, mandatory, first paint, disabled, error display rules
-- [ ] **Side effects** — camera, haptics, window overlay? If yes → `Internal/` helper + plist keys
+## 2. Implement selected mechanisms
 
-### 1.3 State map (foundation #2)
+Work in dependency order and follow the host layout.
 
-List every piece of state:
+### Data flow
 
-| Property / concern | Owner | Type | Notes |
-|--------------------|--------|------|-------|
-| e.g. `text` | Parent | `Binding<String>` | |
-| e.g. `isValid` | Parent | `Binding<Bool>?` | default `.constant(true)` |
-| e.g. `hasInteracted` | Component | `@State private` | |
-| e.g. `isMandatory` | Environment | modifier | |
+- Use values for read-only inputs and Binding for edits to parent-owned state.
+- Keep component-owned transient state private; do not mirror bindings or use constant bindings as editable fallbacks.
+- Justify each callback with a concrete consumer need; specify event timing and payload.
+- Avoid redundant state notifications, callback chains, and collections of workflow closures.
+- Apply validation-specific guidance only to components that validate input.
 
-### 1.4 Public API draft (foundations #1, #3, #5, #6)
+### Customization and composition
 
-**Focused `init` (required inputs explicit; no fixed parameter limit)**
+- Prefer suitable system controls and standard styling.
+- Prefer nested Config for coherent groups of component-specific appearance settings, with usable defaults and appropriate access control.
+- Use environment keys only for intentionally inherited settings; scope public modifier names to their component family and implement a consumer.
+- Extract subviews around distinct responsibilities, not numeric size thresholds.
+- Choose View, standard style, or ViewModifier to match the reusable responsibility. Use existing protocols and focused content slots for demonstrated variation; check a realistic extension without adding speculative API.
+- Isolate platform side effects in focused helpers when needed. Add permission keys only for APIs that require them.
 
-```text
-init(
-  title: String,
-  text: Binding<String>,
-  isValid: Binding<Bool>? = nil,
-  config: Config = .init()
-)
-```
+### Compatibility and docs
 
-- [ ] List each parameter and why it belongs in initialization
-- [ ] List useful nested types, if any: `Config`, `BorderConfig`, `MessageConfig`, etc.
-- [ ] Apply preferred patterns where their conditions hold; briefly justify meaningful departures
-- [ ] Confirm **default usage** needs no modifiers
+- Preserve deployment targets, language settings, and compatible public API.
+- Localize availability decisions and reuse only helpers that exist in the host.
+- Document public contracts with a self-contained usage example.
+- Keep comments for non-obvious reasons or constraints; omit comments that narrate obvious code.
+- Follow [platform-versioning.md](platform-versioning.md), [documentation.md](documentation.md), and [shipping.md](shipping.md).
 
-**Modifiers (use `+EnvironmentKey.swift` only for inherited settings)**
+### Sample
 
-| Modifier | EnvironmentKey default | Purpose |
-|----------|------------------------|---------|
-| `.isMandatory(_:message:)` | `(false, "")` | |
-| `.onValidate { }` | `nil` | |
+Use existing sample or preview infrastructure. Show basic usage with required inputs and no styling setup, supported customization, and relevant edge cases. For an inherited modifier, demonstrate ancestor application and a local override. Every demonstrated option must have an observable effect.
 
-- [ ] Optional behavior or appearance has clear scope; per-instance options do not require environment keys
+The bundled [templates](../templates/README.md) are optional starting points. Remove unused sections and replace every placeholder.
 
-**Callbacks (if any)**
+## 3. Review and verify
 
-- [ ] Prefer `Binding` for state; use closures for one-shot events (`onCommit`, `onRequestPermission`)
+- All six foundations hold, with meaningful departures from preferred patterns justified.
+- Required inputs and ownership are clear; callback scope is focused.
+- Every public option is consumed; inherited scope and local overrides match documentation.
+- Presentation choices preserve underlying state.
+- Existing APIs and package settings remain compatible unless migration was authorized.
+- Documentation examples are complete and comments add useful information.
+- No debug noise, unused state, app-specific assets, or unexplained dependencies.
+- Build the affected target and compile a separate consumer for public API changes.
+- Run relevant behavioral tests and inspect affected interactions/rendering where available.
 
-### 1.5 Composition plan (foundation #4)
+Report files changed, resulting API/behavior, checks actually run, and verification gaps. Do not report skipped previews or simulator checks as passing. Do not create releases, version bumps, tags, or publications unless requested.
 
-- [ ] **System control(s)** wrapped — `TextField`, `SecureField`, `Button`, …
-- [ ] **Private subviews** — `fieldRow`, `clearButton`, `validationMessages`, …
-- [ ] **Subview boundaries** — extract distinct responsibilities where it improves clarity; no fixed body-length limit
-- [ ] **Not in scope** — no navigation, no API calls, no screen layout
+## Optional proposal outline
 
-### 1.6 Six foundations review
+For tasks that benefit from an explicit proposal:
 
-Answer every row — copy into proposal:
+1. Responsibility and consumer example.
+2. Data-flow ownership.
+3. Public API and customization scope.
+4. Relevant foundation decisions and tradeoffs.
+5. Files and host integration.
+6. Compatibility, sample coverage, and verification.
 
-| # | Question | Answer |
-|---|----------|--------|
-| 1 | Which appearance API fits, and why? | Standard styling / grouped Config / focused options → … |
-| 2 | Who owns each state property? | see state map |
-| 3 | Required inputs explicit? Optional customization coherent? Environment intentionally inherited? | … |
-| 4 | Built on which system controls / subviews? | … |
-| 5 | What is `public` vs `internal`? Doc example sketched? | … |
-| 6 | Zero-config example one-liner? | `Component(title: "X", text: $t)` |
-
-If any answer is weak → revise API before approval.
-
-### 1.7 File tree
-
-Adapt to host package. Example:
-
-Include only files needed by the selected mechanisms.
-
-```text
-Sources/CommonSwiftUI/Components/PinCodeField/
-├── Public/
-│   └── PinCodeField.swift
-├── Internal/
-│   └── PinCodeFieldLayout.swift    # only if needed
-└── PinCodeField+EnvironmentKey.swift
-
-SampleCode/SampleCode/TextField/PinCodeFieldTestView.swift
-```
-
-- [ ] List every new file path
-- [ ] Note files touched in sample app navigation (`ContentView`, menu)
-
-### 1.8 Sample plan (foundation #6, #9)
-
-| Section | Purpose |
-|---------|---------|
-| **Default** | No modifiers; proves zero-config |
-| **Customization** | Supported styling or Config values, if applicable |
-| **Modifiers** | Supported modifier chains, if applicable |
-| **Failure / invalid** | Error state, empty mandatory, etc. |
-
-- [ ] Preview provider included (`#Preview`)
-
-### 1.9 Platform & accessibility
-
-- [ ] Minimum OS — any `#available` gap? Describe fallback in one sentence
-- [ ] VoiceOver — labels for icon-only buttons
-- [ ] Dynamic Type — layout still works?
-
-### 1.10 Stop
-
-- [ ] Post full proposal
-- [ ] **Wait for user approval** — do not implement until approved
-
----
-
-## Phase 2 — Implement (after approval)
-
-Implement selected mechanisms in dependency order. Skip mechanisms the component does not need; the checklist does not require identical artifacts for every control.
-
-### 2.1 Environment keys (if inherited settings planned)
-
-File: `{Name}+EnvironmentKey.swift`
-
-- [ ] `EnvironmentKey` struct per modifier concern
-- [ ] Sensible `defaultValue` for “off” or safe default
-- [ ] `extension EnvironmentValues` (internal)
-- [ ] `public extension View` with modifier methods
-- [ ] Modifier names match proposal table
-
-### 2.2 Config or style types (if grouped customization planned)
-
-In `{Name}.swift` or split if large:
-
-- [ ] Prefer nested `public struct Config` for grouped component-specific appearance; sub-configs only for useful groups
-- [ ] `private(set)` on stored properties where appropriate
-- [ ] Default `init()` — neutral colors (`.primary`, `.red`), not app brand
-- [ ] No behavior logic inside `Config` — data only
-
-### 2.3 Main view struct
-
-File: `{Name}.swift` (under `Public/` if package uses it)
-
-- [ ] `public struct {Name}: View`
-- [ ] `init` matches approved API exactly
-- [ ] `@Binding` + optional binding fallbacks
-- [ ] `@State private` only for UI-only state from state map
-- [ ] `@Environment` only for intentionally inherited settings
-- [ ] Prefer suitable system controls; justify custom implementations when needed
-- [ ] Private subviews extracted around distinct responsibilities (`private var fieldRow: some View`)
-- [ ] Appearance uses the selected modifiers, style, or Config; no dependency on app-specific brand assets
-- [ ] Validation / UX rules from proposal (defer errors, etc.)
-- [ ] `onChange` / `onAppear` match behavior spec
-
-### 2.4 Internal helpers (only if needed)
-
-File: `Internal/{Name}Helper.swift`
-
-- [ ] UIKit, window, camera, layout math isolated here
-- [ ] Types `internal` or `private`
-- [ ] No `public` leakage
-
-### 2.5 Platform fallback (if needed)
-
-- [ ] Single helper or `apply` block — not scattered `#available`
-- [ ] Document in code comment which OS uses which path
-
-### 2.6 Documentation
-
-- [ ] Doc comment on `public struct {Name}: View`
-- [ ] Summary + modifiers list + **one compilable ` ```swift ` example**
-- [ ] Public modifier methods documented briefly
-
-### 2.7 Sample view
-
-File: `SampleCode/.../{Name}TestView.swift`
-
-- [ ] `import` package module
-- [ ] Section **Default** — no modifiers
-- [ ] Section **Customization** (if applicable)
-- [ ] Section **Modifiers** (if applicable)
-- [ ] Section **Failure / invalid**
-- [ ] `#Preview` with `NavigationStack` if needed
-- [ ] Wire into sample app menu / `ContentView` if project does that elsewhere
-
-### 2.8 Package hygiene
-
-- [ ] Files under correct `Sources/{Module}/` path
-- [ ] No new dependencies without approval
-- [ ] Bump package version / changelog only if maintainer requests
-
----
-
-## Phase 3 — Review (before merge)
-
-### 3.1 Six foundations
-
-- [ ] **1** Appearance API fits the component; preferred patterns applied or meaningful departures justified
-- [ ] **2** State map honored in code
-- [ ] **3** Focused `init`; environment keys only for inherited settings
-- [ ] **4** Suitable system controls reused; distinct responsibilities separated without arbitrary size limits
-- [ ] **5** Minimal `public`; doc example present
-- [ ] **6** Default sample section works without modifiers
-
-### 3.2 Additional rules
-
-- [ ] UX: empty vs invalid vs neutral per spec
-- [ ] `#available` centralized
-- [ ] Accessibility labels on custom controls
-- [ ] No `print` / debug noise in `body`
-- [ ] No app-specific asset names in public API
-
-### 3.3 Build & manual test
-
-- [ ] Sample target builds
-- [ ] Run sample on minimum OS simulator if platform branching exists
-- [ ] Preview renders
-
-### 3.4 Output summary for user
-
-Post short summary:
-
-- Files created/changed
-- Public API one-liner
-- How to run sample
-- Any follow-ups (tests, README, plist keys)
-
----
-
-## Extending an existing component
-
-**Small change** (one modifier, one config color): Phase 1 can be a 5-line delta (what changes, foundation impact). Still get approval before editing.
-
-**Breaking change** (rename, remove init param): Full Phase 1 + note migration in proposal.
-
----
-
-## Quick reference: proposal template
-
-Copy into chat for Phase 1:
-
-```markdown
-## Component proposal: [Name]
-
-**Responsibility:** …
-
-### State map
-| Property | Owner | Type |
-|----------|--------|------|
-
-### init
-…
-
-### Modifiers
-| Modifier | Default |
-|----------|---------|
-
-### Config
-…
-
-### Composition
-- System controls: …
-- Subviews: …
-
-### Six foundations review
-| # | Answer |
-|---|--------|
-
-### File tree
-…
-
-### Sample sections
-1. Default
-2. …
-
-**Awaiting approval before implementation.**
-```
+End with a question only if a decision or authorization is actually missing.

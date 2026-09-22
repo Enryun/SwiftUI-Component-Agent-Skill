@@ -39,13 +39,18 @@ For settings intentionally inherited by descendants:
 2. Extend `EnvironmentValues` (internal).
 3. Public `extension View` with modifier method.
 
-```swift
-public extension View {
-    func isMandatory(_ value: Bool, message: String = "Required") -> some View {
-        environment(\.isMandatory, (value, message))
-    }
-}
-```
+The [environment template](../templates/swift/EnvironmentKey.swift.template) and paired component demonstrate a complete key, modifier, and consumer.
+
+### Scope and naming
+
+- Prefer methods on the component type for instance-only options, or a focused style/modifier when appropriate. Document ordering if a concrete-type method must precede modifiers that erase the concrete type.
+- A public extension on View is discoverable on every view. For an inherited component setting, name the affected component family, for example `validationTextFieldShowsCharacterCount(_:)`, rather than `showCount(_:)` or `isMandatory(_:)`. General-purpose effects such as shimmer may also extend View directly; they do not require environment inheritance. Name and document the actual effect and scope.
+- Give EnvironmentValues properties the same clear family scope. Avoid collisions with system APIs and unrelated libraries.
+- Document which descendants consume the value, its default, and nearer overrides. An unrelated view should not acquire unintended behavior.
+- Every setting needs a consumer and an observable effect. Exercise ancestor application and a local override in sample usage.
+- Preserve existing public names; recommend scoped names for new APIs rather than silently renaming legacy modifiers.
+
+See Apple's [EnvironmentValues documentation](https://developer.apple.com/documentation/swiftui/environmentvalues/) for inheritance and overrides.
 
 **Use EnvironmentKey when:** the setting should propagate through a view subtree. For per-instance behavior, consider a parameter or ordinary modifier first. Modifier chaining alone is not a reason to add environment state.
 
@@ -53,11 +58,13 @@ public extension View {
 
 ## Result-based validation
 
-For custom rules, prefer `Result<SuccessPayload, Error>` or a small enum over throwing from `body`:
+Only for components with caller-supplied validation: choose a focused function returning a result that fits the contract. This does not require an environment callback or a new public modifier. Do not run side-effecting validation from `body`. Illustrative rule:
 
 ```swift
-.onValidate { value in
-    value.count >= 6 ? .success("OK") : .failure(MyError.tooShort)
+enum InputError: Error { case tooShort }
+
+func validate(_ value: String) -> Result<Void, InputError> {
+    value.count >= 6 ? .success(()) : .failure(.tooShort)
 }
 ```
 

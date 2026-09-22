@@ -41,11 +41,11 @@ Every piece of state has exactly one owner. Never duplicate source of truth.
 
 | Owner | Holds |
 |-------|--------|
-| **Parent** (`Binding`) | Text, selection, `isValid`, values that enable Submit / navigation |
+| **Parent** (value or `Binding`) | Values for read-only inputs; Binding for text or selection the component edits |
 | **Component** (`@State` private) | `hasInteracted`, animation phase, internal toggle (e.g. show password) |
 | **Environment** | Optional modifiers, theme, feature flags |
 
-**Rule:** If the parent must react, expose a `Binding`. If only the control’s UI cares, keep `@State` private. Optional bindings use safe defaults (`?? .constant(true)`).
+**Rule:** Use values for read-only inputs, Binding for two-way edits to parent-owned state, and focused callbacks for actions or notifications. Keep component-owned transient state private. Derive results where practical; do not mirror bindings into local state or use constant bindings as editable fallbacks.
 
 See [state-ownership.md](state-ownership.md).
 
@@ -59,10 +59,8 @@ See [state-ownership.md](state-ownership.md).
 // BAD — mixes required inputs with many unrelated customization options
 init(..., isMandatory: Bool, mandatoryMessage: String, showClear: Bool, …)
 
-// PREFERRED — focused init with optional customization (illustrative call shape)
+// PREFERRED — focused init with coherent grouped appearance
 init(title: String, text: Binding<String>, config: Config = .init())
-    .isMandatory(true)
-    .clearButtonHidden(false)
 ```
 
 **Init typically holds:** required data, bindings, actions/content, and optional Config when useful.  
@@ -106,7 +104,7 @@ Consumers learn the component from **names**, **small surface**, and **doc comme
 - `internal` / `private`: helpers, window managers, layout math, ViewModels.
 - Follow existing public naming conventions; use `{Name}.Config` and `{Name}+EnvironmentKey.swift` when those mechanisms exist.
 - One compilable usage example in the type’s doc comment.
-- Avoid breaking renames without a major version bump.
+- Preserve existing public names; breaking changes require an authorized migration. Version bumps and releases are separate requested work.
 
 See [shipping.md](shipping.md), [documentation.md](documentation.md), [folder-structure.md](folder-structure.md).
 
@@ -120,24 +118,23 @@ Customization is **explicit**:
 
 - Appearance → standard modifiers, styles, or Config with defaults as appropriate.
 - Behavior → focused parameters or modifiers; inherited options use documented environment defaults.
-- Outcomes → optional `Binding` with fallback when parent does not care.
+- Actions and notifications → focused callbacks when needed; Binding only for genuine two-way editing.
 
 ```swift
 public init(
     title: String,
     text: Binding<String>,
-    isValid: Binding<Bool>? = nil,
     config: Config = .init()  // all sub-configs also default
 ) { … }
 ```
 
-**Test:** In the sample view, the first section is always “Default” with no modifiers.
+**Check:** Demonstrate basic use without styling setup in the host's existing sample or preview arrangement.
 
 ---
 
-## Foundation review (use in Phase 1)
+## Foundation review
 
-Before approval, confirm in the proposal:
+Review these questions when designing the API; communicate the decisions relevant to the change:
 
 | # | Question |
 |---|----------|

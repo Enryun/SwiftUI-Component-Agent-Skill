@@ -1,41 +1,25 @@
-# Documentation
+# Documentation and comments
 
-Every **public** component needs a doc comment on the main type.
+Document the public contract, not obvious implementation steps.
 
-## Structure
+## Public API
 
-1. One-line summary
-2. What it does (2–3 sentences)
-3. Parameters / key modifiers
-4. **One compilable usage example** in a ` ```swift ` block
+Give the main public type a concise summary and one self-contained usage example. Describe non-obvious requirements, callback timing, state ownership, modifier scope, and defaults where relevant. Scale the detail to the API; do not repeat the signature as prose.
 
-## Example skeleton
+Examples must include required supporting types and state. Do not reference undefined errors, unavailable modifiers, or API from a different version. The bundled [component template](../templates/swift/Component.swift.template) includes a minimal consumer example.
 
-```swift
-/// A text field with validation feedback and optional secure entry.
-///
-/// Supports `.isMandatory`, `.onValidate`, and `.onFormValidate` modifiers.
-///
-/// ## Usage Example:
-/// ```swift
-/// struct ContentView: View {
-///     @State private var email = ""
-///     @State private var isEmailValid = false
-///
-///     var body: some View {
-///         ValidationTextField(title: "Email", text: $email, isValid: $isEmailValid)
-///             .isMandatory(true)
-///             .onValidate { $0.contains("@") ? .success("") : .failure(MyError.invalid) }
-///     }
-/// }
-/// ```
-public struct ValidationTextField: View { … }
-```
+For a public environment modifier, name the affected component family, explain descendant scope and defaults, and state how local overrides work. A short comment is sufficient for a simple contract.
 
-## Modifiers
+## Implementation comments
 
-Document public `View` extension methods with a short line each; group in the type’s doc comment under `## Modifiers:`.
+- Do not add comments that merely narrate code: “Update the value,” “Create the button,” or “Initialize properties.”
+- Prefer clear names and small functions over explanatory prose for routine logic.
+- Keep comments that explain a non-obvious reason, invariant, compatibility workaround, or tradeoff that the code cannot express.
+- Do not generate file banners, section markers, or parameter descriptions mechanically. Follow useful host conventions without adding noise.
+- When changing behavior, update or remove stale comments. Do not perform unrelated comment cleanup.
 
-## README
+Instructional BAD/GOOD annotations in this skill are teaching aids, not comments to copy into generated source.
 
-Package README can stay long for humans. The skill targets **agent-consumable** doc comments — do not duplicate the entire README into `SKILL.md`.
+## Samples and README
+
+Use the host's existing sample or preview arrangement. Demonstrate default usage and the customization actually supported. Do not create a new sample app solely to satisfy a folder convention. Avoid duplicating the entire reference documentation into code comments or the package README.

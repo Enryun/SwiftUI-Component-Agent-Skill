@@ -1,0 +1,21 @@
+import SwiftUI
+
+private struct {ComponentName}ShowsCharacterCountKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var {componentName}ShowsCharacterCount: Bool {
+        get { self[{ComponentName}ShowsCharacterCountKey.self] }
+        set { self[{ComponentName}ShowsCharacterCountKey.self] = newValue }
+    }
+}
+
+public extension View {
+    /// Shows character counts in descendant {ComponentName} controls.
+    ///
+    /// Defaults to false. A setting closer to a control overrides an ancestor's setting.
+    func {componentName}ShowsCharacterCount(_ visible: Bool = true) -> some View {
+        environment(\.{componentName}ShowsCharacterCount, visible)
+    }
+}
