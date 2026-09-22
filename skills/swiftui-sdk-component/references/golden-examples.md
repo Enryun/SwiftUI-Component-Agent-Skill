@@ -26,4 +26,4 @@ Patterns below are illustrated in [CommonSwiftUI](https://github.com/Enryun/Comm
 
 ## Other packages
 
-When authoring outside CommonSwiftUI, apply the same **shapes** (Config, EnvironmentKey, sample view) and adapt folder paths to the host package layout.
+When authoring outside CommonSwiftUI, apply the same **principles** and adapt folder paths to the host package layout. Choose Config and EnvironmentKey only where the component needs them; the examples do not make those mechanisms mandatory.

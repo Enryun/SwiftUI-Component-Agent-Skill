@@ -2,13 +2,13 @@
 
 Mapped to [six-foundations.md](six-foundations.md). Reject designs that match these patterns.
 
-## Foundation #1 — appearance in body
+## Foundation #1 — inflexible appearance when customization is needed
 
 ```swift
-// BAD — hard-coded colors in body (violates #1)
+// BAD — fixed colors when consumers need validation styling
 .stroke(isValid ? .green : .red)
 
-// GOOD — Config-driven
+// GOOD — one option for grouped styling; standard styles can also work
 .stroke(isValid ? config.borderConfig.validColor : config.borderConfig.invalidColor)
 ```
 
@@ -25,7 +25,7 @@ public init(title: String, text: Binding<String>, config: Config = .init())
 ## Foundation #4 — monolithic body
 
 ```swift
-// BAD — 200-line body with inline validation, buttons, animations
+// BAD — body mixes unrelated validation, button, and animation responsibilities
 
 // GOOD — private computed properties / subviews
 private var fieldRow: some View { … }

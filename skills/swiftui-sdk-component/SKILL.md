@@ -2,7 +2,7 @@
 name: swiftui-sdk-component
 description: >-
   Authors reusable SwiftUI SDK components using the six foundations—separate behavior
-  from Config, deliberate state ownership, EnvironmentKey modifiers, composition,
+  from appearance, deliberate state ownership, focused customization APIs, composition,
   minimal public API, and sensible defaults. Use when creating or extending components
   in CommonSwiftUI, SwiftUI libraries, or package UI modules—not app feature screens.
 ---
@@ -19,18 +19,20 @@ Use this skill for **reusable SwiftUI controls** in a package or design system.
 
 ## The six foundations (core — never skip)
 
-Every reusable component must satisfy **all six**. Read [six-foundations.md](references/six-foundations.md) for detail, examples, and Phase 1 review questions.
+Review **all six principles**, choosing mechanisms appropriate to the component. Config types, environment keys, and extracted subviews are tools, not required artifacts. Preserve existing public APIs unless a change is requested. Read [six-foundations.md](references/six-foundations.md) for detail, examples, and Phase 1 review questions.
 
 | # | Foundation | One-line rule |
 |---|------------|----------------|
-| 1 | **Separate what it is from how it looks** | Behavior in the view; colors/fonts/radii only in nested `Config` |
+| 1 | **Separate what it is from how it looks** | Keep behavior independent of app branding; choose standard modifiers, styles, or Config as needed |
 | 2 | **Own state deliberately** | Parent `Binding` for outcomes; `@State` private for UI-only; Environment for modifiers |
-| 3 | **Modifiers over giant inits** | `init` ≤5 params; optional behavior via `EnvironmentKey` + `View` extension |
-| 4 | **Composition, not inheritance** | Wrap `TextField`/`Button`; private subviews; never a monolithic 200-line `body` |
+| 3 | **Focused initialization and customization** | Keep required inputs explicit; choose modifiers for useful options, environment only for inherited settings |
+| 4 | **Composition, not inheritance** | Prefer suitable system controls; extract subviews for meaningful responsibilities, not a line-count limit |
 | 5 | **Stable, discoverable public API** | Minimal `public` surface; consistent names; doc comment with one example |
-| 6 | **Sensible defaults, explicit customization** | Zero-config usage works; override via `Config` + modifiers, not required params |
+| 6 | **Sensible defaults, explicit customization** | Basic usage works with required inputs/content and no extra styling setup |
 
-**Reject any design that fails a foundation** — revise the Phase 1 proposal before implementing.
+**Revise designs that violate a principle**, not designs that omit an unnecessary Config, environment key, or helper type. Explain which mechanisms fit the component in the proposal.
+
+**Enforce principles; prefer established patterns when their conditions hold.** Start with suitable system controls and standard styling. Prefer nested Config for grouped component-specific appearance, focused modifiers for optional customization, environment keys for inherited settings, and subviews for distinct responsibilities. Briefly justify meaningful departures; do not treat all alternatives as equally suitable.
 
 ## Additional non-negotiables
 
@@ -46,8 +48,9 @@ Building a reusable control?
 ├─ Parent must react (submit enabled, form valid, selection)?
 │  └─ Expose Binding (optional Binding with .constant fallback for simple cases)
 ├─ Customization at call site?
-│  ├─ Few per-instance options → nested Config on init
-│  ├─ Fluent optional behavior → EnvironmentKey + View extension
+│  ├─ Few per-instance options → direct parameters or ordinary modifiers
+│  ├─ Related appearance settings → Config or an existing style API
+│  ├─ Inherited subtree settings → EnvironmentKey + View extension
 │  └─ App-wide theme → Environment / style protocol (document in shipping.md)
 ├─ Touches camera / UIWindow / UIKit?
 │  └─ Isolate in Internal/ type; document Info.plist in sample README
@@ -66,7 +69,7 @@ Full step-by-step checklists: **[scaffold-workflow.md](references/scaffold-workf
 | Phase | Goal | Output |
 |-------|------|--------|
 | **1 — Propose** | Design API, state, files, sample | Proposal in chat → **stop for approval** |
-| **2 — Implement** | Write code in fixed order | Source + sample + docs |
+| **2 — Implement** | Implement the selected mechanisms in dependency order | Source + sample + docs |
 | **3 — Review** | Verify foundations + build | Summary for user |
 
 ### Phase 1 — Propose (summary)
@@ -74,7 +77,7 @@ Full step-by-step checklists: **[scaffold-workflow.md](references/scaffold-workf
 1. Name + one-sentence responsibility  
 2. Behavior spec + edge cases  
 3. **State map** (Binding / `@State` / Environment)  
-4. **Public API** — `init` ≤5, `Config`, modifier table  
+4. **Public API** — focused init, Config/styles/modifiers only where useful  
 5. **Composition plan** — system controls + subview names  
 6. **Six foundations review** — all six answers ([six-foundations.md](references/six-foundations.md))  
 7. **File tree** + sample sections (Default first)  
@@ -85,10 +88,10 @@ Use the [proposal template](references/scaffold-workflow.md#quick-reference-prop
 
 ### Phase 2 — Implement (summary)
 
-Only after approval. Order:
+Only after approval. Suggested order; skip mechanisms the design does not need:
 
-1. `{Name}+EnvironmentKey.swift` (modifiers)  
-2. `Config` types  
+1. `{Name}+EnvironmentKey.swift` (only for inherited settings)  
+2. `Config` or style types (if needed)  
 3. `public struct {Name}: View` — compose system controls, private subviews  
 4. `Internal/` helpers (if UIKit/window/camera)  
 5. Platform fallback helper (if needed)  
@@ -108,9 +111,9 @@ Full gate: [scaffold-workflow.md § Phase 3](references/scaffold-workflow.md#pha
 
 **Six foundations**
 
-- [ ] **1** Appearance only in `Config` — no brand colors in `body`
+- [ ] **1** Appearance API fits the component; no dependency on app-specific brand assets
 - [ ] **2** State map documented — bindings vs `@State` vs Environment
-- [ ] **3** `init` ≤5 parameters; behavior exposed as modifiers
+- [ ] **3** Required inputs are clear; customization mechanisms are justified, without a numeric parameter limit
 - [ ] **4** Composed from system controls + private subviews — not monolithic
 - [ ] **5** `public` surface minimal; doc comment with one example
 - [ ] **6** Default usage works with no modifiers; sample “Default” section proves it
@@ -125,12 +128,12 @@ Full gate: [scaffold-workflow.md § Phase 3](references/scaffold-workflow.md#pha
 ## Anti-patterns (reject if suggested)
 
 ```swift
-// BAD — 12-parameter init
+// BAD — required inputs mixed with many unrelated styling and behavior options
 public init(title:text:isValid:isSecured:showBorder:borderColor:…)
 
 // GOOD
 public init(title: String, text: Binding<String>, isValid: Binding<Bool>? = nil, config: Config = .init())
-// + .isMandatory(true) via EnvironmentKey
+// + optional modifiers; use EnvironmentKey only if subtree inheritance is intended
 ```
 
 ```swift
@@ -151,7 +154,7 @@ public struct Toast { … }
 ```
 
 ```swift
-// BAD — foundation #4: reimplementing TextField, 200-line body
+// BAD — reimplementing TextField behavior without need; mixing unrelated concerns in body
 // GOOD — TextField + private clearButton + Config-driven stroke
 ```
 

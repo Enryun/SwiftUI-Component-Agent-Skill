@@ -2,6 +2,8 @@
 
 Adapt to the host package. CommonSwiftUI-style layout:
 
+These trees illustrate a component with grouped configuration and inherited settings. Create only the files needed by the selected API; a simple component may need just its view file.
+
 ```
 Sources/{ModuleName}/
 └── Components/

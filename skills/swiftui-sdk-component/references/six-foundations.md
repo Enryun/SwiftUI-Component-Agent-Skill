@@ -1,6 +1,16 @@
 # The six foundations
 
-These six principles define a **reusable** SwiftUI component. Apply every one on every new control. If a proposal violates any foundation, fix the design before writing code.
+These six principles guide reusable SwiftUI components. Review each principle, while choosing the smallest implementation that meets the component's needs. CommonSwiftUI patterns are preferred examples, not a requirement to generate the same files and types for every control. Do not redesign a compatible existing public API merely to match a pattern.
+
+---
+
+## How strongly to apply these rules
+
+- **Enforce principles:** one source of truth, explicit required inputs, appropriate access control, behavior independent of app branding, and usable defaults.
+- **Recommend a preferred implementation:** use suitable system controls and standard styling first; prefer a nested Config for coherent groups of component-specific appearance settings; prefer focused modifiers for optional customization; use environment keys for intentionally inherited settings; extract subviews around distinct responsibilities.
+- **Allow justified alternatives:** follow a compatible existing API or choose a simpler mechanism when it better fits the component. Explain meaningful departures briefly in the proposal. Do not add types, files, or indirection solely to match an example.
+
+Conditional does not mean arbitrary: apply the preferred pattern when its conditions hold, and review whether an alternative preserves the principles.
 
 ---
 
@@ -12,13 +22,13 @@ These six principles define a **reusable** SwiftUI component. Apply every one on
 | Layout contract (label + field + message) | Border width, stroke colors |
 | When to show error vs neutral | Message text styling |
 
-**Rule:** No hard-coded brand or semantic colors in `body`. Appearance lives in nested `Config` (and sub-configs like `BorderConfig`, `MessageConfig`).
+**Rule:** Keep behavior independent of host-app branding. Prefer standard SwiftUI modifiers or existing styles for simple controls. A Config is useful when several related appearance settings form a coherent customization API; nesting and sub-configs are optional. Semantic defaults may be used directly when they fit the component. Do not expose every internal spacing value as configuration.
 
 ```swift
-// BAD — appearance in body
+// BAD — fixed styling when consumers need to customize validation appearance
 RoundedRectangle(cornerRadius: 8).stroke(isValid ? .green : .red)
 
-// GOOD
+// PREFERRED for a coherent group of component-specific appearance settings
 RoundedRectangle(cornerRadius: config.borderConfig.radius)
     .stroke(isValid ? config.borderConfig.validColor : config.borderConfig.invalidColor)
 ```
@@ -43,20 +53,20 @@ See [state-ownership.md](state-ownership.md).
 
 ## 3. Prefer modifiers over giant inits
 
-**Rule:** `init` stays small (≤5 parameters). Optional or fluent behavior uses `EnvironmentKey` + `public extension View`.
+**Rule:** Keep initialization focused, with required inputs explicit. Five parameters is a review prompt, not a hard limit. A longer coherent initializer can be clearer than hiding essential inputs in modifiers. Optional behavior may use direct parameters or ordinary modifiers; use EnvironmentKey when values are intended to be inherited by descendants.
 
 ```swift
-// BAD
+// BAD — mixes required inputs with many unrelated customization options
 init(..., isMandatory: Bool, mandatoryMessage: String, showClear: Bool, …)
 
-// GOOD
+// PREFERRED — focused init with optional customization (illustrative call shape)
 init(title: String, text: Binding<String>, config: Config = .init())
     .isMandatory(true)
     .clearButtonHidden(false)
 ```
 
-**Init holds:** identity + primary bindings + `Config`.  
-**Modifiers hold:** per-call-site behavior flags, validation closures, visibility toggles.
+**Init typically holds:** required data, bindings, actions/content, and optional Config when useful.  
+**Modifiers may hold:** optional behavior or styling with clear scope. Fluent syntax alone does not require EnvironmentKey.
 
 See [api-design.md](api-design.md) — EnvironmentKey modifiers.
 
@@ -68,9 +78,9 @@ SwiftUI has no real view inheritance. Reuse through **composition**.
 
 **Rule:**
 
-- Wrap system controls (`TextField`, `SecureField`, `Button`, `Toggle`) — do not reimplement them.
+- Prefer system controls (`TextField`, `SecureField`, `Button`, `Toggle`) when they meet the interaction contract. Custom drawing or bridging is valid when the control requires it; account for accessibility and platform behavior.
 - Extract private subviews when `body` grows (`fieldRow`, `clearButton`, `validationMessages`).
-- Prefer `@ViewBuilder` slots only when the component is intentionally a container.
+- Use `@ViewBuilder` slots when callers need custom visual content, including labels or accessories on controls. Do not add unused slots for hypothetical flexibility.
 - **Never** subclass `UIView` / `NSView` for a SwiftUI-only control unless bridging is the explicit goal.
 
 ```swift
@@ -94,7 +104,7 @@ Consumers learn the component from **names**, **small surface**, and **doc comme
 
 - `public`: main `View`, `Config`, nested public types, modifier methods on `View`.
 - `internal` / `private`: helpers, window managers, layout math, ViewModels.
-- Consistent naming: `{Name}.Config`, `{Name}+EnvironmentKey.swift`, `{Name}TestView`.
+- Follow existing public naming conventions; use `{Name}.Config` and `{Name}+EnvironmentKey.swift` when those mechanisms exist.
 - One compilable usage example in the type’s doc comment.
 - Avoid breaking renames without a major version bump.
 
@@ -104,12 +114,12 @@ See [shipping.md](shipping.md), [documentation.md](documentation.md), [folder-st
 
 ## 6. Sensible defaults, explicit customization
 
-**Rule:** The component must work with **zero extra configuration** — `Component(title: "Email", text: $email)` compiles and looks acceptable.
+**Rule:** The component should work with its required inputs and content, without extra styling setup. Required actions, data, or label/content closures are not failures of sensible defaults.
 
 Customization is **explicit**:
 
-- Appearance → `Config` parameter or sub-configs with defaults.
-- Behavior → modifiers with documented `EnvironmentKey` defaults.
+- Appearance → standard modifiers, styles, or Config with defaults as appropriate.
+- Behavior → focused parameters or modifiers; inherited options use documented environment defaults.
 - Outcomes → optional `Binding` with fallback when parent does not care.
 
 ```swift
@@ -131,9 +141,9 @@ Before approval, confirm in the proposal:
 
 | # | Question |
 |---|----------|
-| 1 | Where is appearance? (Config only) |
+| 1 | Which appearance API fits this component, and why? |
 | 2 | State map — who owns each property? |
-| 3 | Init param count ≤5? Modifiers listed? |
+| 3 | Are required inputs explicit and options coherent? Are environment settings intentionally inherited? |
 | 4 | Built on system controls / subviews, not monolith? |
 | 5 | What is `public` vs `internal`? Doc example included? |
 | 6 | Does default usage need zero modifiers? |

@@ -7,7 +7,7 @@ Use when **creating** or **substantially extending** a public SDK component.
 | Phase | Purpose |
 |-------|---------|
 | **Phase 1 — Propose** | Align on API, state, foundations, and files **before** code. Prevents wrong `public` surface, giant inits, and missing samples. |
-| **Phase 2 — Implement** | Build only what was approved. Order matters (keys → view → docs → sample). |
+| **Phase 2 — Implement** | Build the approved mechanisms in dependency order, then docs and sample. |
 | **Phase 3 — Review** | Verify six foundations and ship gate before merge. |
 
 **Rule:** Do not create or edit component source files during Phase 1. Do not skip Phase 1 for “small” components.
@@ -46,7 +46,7 @@ List every piece of state:
 
 ### 1.4 Public API draft (foundations #1, #3, #5, #6)
 
-**`init` (≤5 parameters)**
+**Focused `init` (required inputs explicit; no fixed parameter limit)**
 
 ```text
 init(
@@ -57,18 +57,19 @@ init(
 )
 ```
 
-- [ ] List each parameter and why it is not a modifier
-- [ ] List nested types: `Config`, `BorderConfig`, `MessageConfig`, etc.
+- [ ] List each parameter and why it belongs in initialization
+- [ ] List useful nested types, if any: `Config`, `BorderConfig`, `MessageConfig`, etc.
+- [ ] Apply preferred patterns where their conditions hold; briefly justify meaningful departures
 - [ ] Confirm **default usage** needs no modifiers
 
-**Modifiers (`+EnvironmentKey.swift`)**
+**Modifiers (use `+EnvironmentKey.swift` only for inherited settings)**
 
 | Modifier | EnvironmentKey default | Purpose |
 |----------|------------------------|---------|
 | `.isMandatory(_:message:)` | `(false, "")` | |
 | `.onValidate { }` | `nil` | |
 
-- [ ] Only behaviors that vary per call site go here — not appearance
+- [ ] Optional behavior or appearance has clear scope; per-instance options do not require environment keys
 
 **Callbacks (if any)**
 
@@ -78,7 +79,7 @@ init(
 
 - [ ] **System control(s)** wrapped — `TextField`, `SecureField`, `Button`, …
 - [ ] **Private subviews** — `fieldRow`, `clearButton`, `validationMessages`, …
-- [ ] **Estimated `body` size** — if >40 lines, subviews are mandatory
+- [ ] **Subview boundaries** — extract distinct responsibilities where it improves clarity; no fixed body-length limit
 - [ ] **Not in scope** — no navigation, no API calls, no screen layout
 
 ### 1.6 Six foundations review
@@ -87,9 +88,9 @@ Answer every row — copy into proposal:
 
 | # | Question | Answer |
 |---|----------|--------|
-| 1 | Where does appearance live? | `Config` only → … |
+| 1 | Which appearance API fits, and why? | Standard styling / grouped Config / focused options → … |
 | 2 | Who owns each state property? | see state map |
-| 3 | `init` param count? Modifier list? | … |
+| 3 | Required inputs explicit? Optional customization coherent? Environment intentionally inherited? | … |
 | 4 | Built on which system controls / subviews? | … |
 | 5 | What is `public` vs `internal`? Doc example sketched? | … |
 | 6 | Zero-config example one-liner? | `Component(title: "X", text: $t)` |
@@ -99,6 +100,8 @@ If any answer is weak → revise API before approval.
 ### 1.7 File tree
 
 Adapt to host package. Example:
+
+Include only files needed by the selected mechanisms.
 
 ```text
 Sources/CommonSwiftUI/Components/PinCodeField/
@@ -119,8 +122,8 @@ SampleCode/SampleCode/TextField/PinCodeFieldTestView.swift
 | Section | Purpose |
 |---------|---------|
 | **Default** | No modifiers; proves zero-config |
-| **Custom config** | Different `Config` values |
-| **Modifiers** | One or more modifier chains |
+| **Customization** | Supported styling or Config values, if applicable |
+| **Modifiers** | Supported modifier chains, if applicable |
 | **Failure / invalid** | Error state, empty mandatory, etc. |
 
 - [ ] Preview provider included (`#Preview`)
@@ -140,9 +143,9 @@ SampleCode/SampleCode/TextField/PinCodeFieldTestView.swift
 
 ## Phase 2 — Implement (after approval)
 
-Create files in this order. Check off as you go.
+Implement selected mechanisms in dependency order. Skip mechanisms the component does not need; the checklist does not require identical artifacts for every control.
 
-### 2.1 Environment keys (if modifiers planned)
+### 2.1 Environment keys (if inherited settings planned)
 
 File: `{Name}+EnvironmentKey.swift`
 
@@ -152,11 +155,11 @@ File: `{Name}+EnvironmentKey.swift`
 - [ ] `public extension View` with modifier methods
 - [ ] Modifier names match proposal table
 
-### 2.2 Config types
+### 2.2 Config or style types (if grouped customization planned)
 
 In `{Name}.swift` or split if large:
 
-- [ ] `public struct Config` with sub-configs
+- [ ] Prefer nested `public struct Config` for grouped component-specific appearance; sub-configs only for useful groups
 - [ ] `private(set)` on stored properties where appropriate
 - [ ] Default `init()` — neutral colors (`.primary`, `.red`), not app brand
 - [ ] No behavior logic inside `Config` — data only
@@ -169,10 +172,10 @@ File: `{Name}.swift` (under `Public/` if package uses it)
 - [ ] `init` matches approved API exactly
 - [ ] `@Binding` + optional binding fallbacks
 - [ ] `@State private` only for UI-only state from state map
-- [ ] `@Environment` for modifier keys
-- [ ] `body` composes system controls — not reimplemented
-- [ ] Private subviews extracted (`private var fieldRow: some View`)
-- [ ] Appearance from `config` only — no hard-coded brand colors
+- [ ] `@Environment` only for intentionally inherited settings
+- [ ] Prefer suitable system controls; justify custom implementations when needed
+- [ ] Private subviews extracted around distinct responsibilities (`private var fieldRow: some View`)
+- [ ] Appearance uses the selected modifiers, style, or Config; no dependency on app-specific brand assets
 - [ ] Validation / UX rules from proposal (defer errors, etc.)
 - [ ] `onChange` / `onAppear` match behavior spec
 
@@ -201,7 +204,7 @@ File: `SampleCode/.../{Name}TestView.swift`
 
 - [ ] `import` package module
 - [ ] Section **Default** — no modifiers
-- [ ] Section **Custom config**
+- [ ] Section **Customization** (if applicable)
 - [ ] Section **Modifiers** (if applicable)
 - [ ] Section **Failure / invalid**
 - [ ] `#Preview` with `NavigationStack` if needed
@@ -219,10 +222,10 @@ File: `SampleCode/.../{Name}TestView.swift`
 
 ### 3.1 Six foundations
 
-- [ ] **1** Appearance only in `Config`
+- [ ] **1** Appearance API fits the component; preferred patterns applied or meaningful departures justified
 - [ ] **2** State map honored in code
-- [ ] **3** `init` ≤5; modifiers in EnvironmentKey file
-- [ ] **4** System controls + subviews; no monolithic body
+- [ ] **3** Focused `init`; environment keys only for inherited settings
+- [ ] **4** Suitable system controls reused; distinct responsibilities separated without arbitrary size limits
 - [ ] **5** Minimal `public`; doc example present
 - [ ] **6** Default sample section works without modifiers
 

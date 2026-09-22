@@ -69,11 +69,11 @@ SwiftUI-Component-Agent-Skill/
 
 ## The six foundations
 
-Every component must satisfy all six (detail in the skill):
+Review all six principles, choosing implementations appropriate to the component (detail in the skill):
 
-1. Separate **what it is** from **how it looks** (`Config`)
+1. Separate **what it is** from **how it looks** (modifiers, styles, or `Config` as appropriate)
 2. **Own state deliberately** (`Binding` vs `@State` vs Environment)
-3. **Modifiers** over giant inits (`EnvironmentKey`)
+3. **Focused initializers** and customization APIs (`EnvironmentKey` for inherited settings)
 4. **Composition**, not inheritance (wrap system controls, private subviews)
 5. **Stable, discoverable** public API (minimal `public`, doc example)
 6. **Sensible defaults**, explicit customization (zero-config works)
@@ -83,7 +83,7 @@ Every component must satisfy all six (detail in the skill):
 | Phase | What happens |
 |-------|----------------|
 | **1 — Propose** | API, state map, six foundations review, file tree, sample plan — **no code yet** |
-| **2 — Implement** | Environment keys → Config → view → docs → sample (only after you approve) |
+| **2 — Implement** | Selected mechanisms in dependency order → docs → sample (only after you approve) |
 | **3 — Review** | Foundations + build sample before merge |
 
 Phases exist because `public` SDK APIs are expensive to change; aligning first avoids giant inits and missing samples.
