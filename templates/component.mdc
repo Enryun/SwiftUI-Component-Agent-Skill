@@ -10,7 +10,7 @@ Use the **swiftui-sdk-component** skill when adding or changing reusable control
 ## The six foundations (never skip)
 
 1. What it is vs how it looks → suitable modifiers, styles, or `Config`
-2. Own state deliberately → `Binding` / `@State` / Environment
+2. Own state deliberately → values for read-only inputs, Binding for edits, focused callbacks for events; one source of truth
 3. Focused initializers and customization → environment only for inherited settings
 4. Composition, not inheritance → system controls + subviews
 5. Stable public API → minimal `public`, doc example

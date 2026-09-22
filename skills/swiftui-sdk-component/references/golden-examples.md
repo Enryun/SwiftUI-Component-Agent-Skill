@@ -15,11 +15,13 @@ Patterns below are illustrated in [CommonSwiftUI](https://github.com/Enryun/Comm
 ## What to copy
 
 - Doc comment with full usage example (`ValidationTextField`)
-- Optional `Binding<Bool>?` with default (same file)
+- Text Binding for parent-owned editable input (same file)
 - `FormValidationElement` for multi-rule checklist UI (same file)
 - `private(set)` on config nested types (same file)
 
 ## What not to copy blindly
+
+- Optional output bindings with constant fallbacks or mirrored `@State` synchronization — follow [state-ownership.md](state-ownership.md); preserve existing APIs until migration is agreed
 
 - Typos in legacy names (`HambugMenu`) — fix when touching, do not propagate
 - Inconsistent naming across old components — follow this skill’s naming table instead

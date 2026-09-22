@@ -9,7 +9,7 @@ Full detail: [`references/six-foundations.md`](skills/swiftui-sdk-component/refe
 | # | Foundation | Pass criteria |
 |---|------------|----------------|
 | 1 | **Separate what it is from how it looks** | Appearance uses suitable modifiers, styles, or `Config` |
-| 2 | **Own state deliberately** | Parent `Binding` for outcomes; `@State` for UI-only; no duplicate truth |
+| 2 | **Own state deliberately** | Values for read-only inputs; Binding for edits; callbacks for events; no duplicate truth |
 | 3 | **Focused initializers and customization** | Required inputs explicit; environment only for inherited settings |
 | 4 | **Composition, not inheritance** | System controls + private subviews; no monolithic `body` |
 | 5 | **Stable, discoverable public API** | Minimal `public`; consistent names; doc example on type |
@@ -47,7 +47,8 @@ Full phases: [`references/scaffold-workflow.md`](skills/swiftui-sdk-component/re
 **Foundations**
 
 - [ ] Foundation 1: Suitable appearance API; no dependency on an app's brand assets
-- [ ] Foundation 2: State map written (Binding / @State / Environment)
+- [ ] Foundation 2: Values, bindings, callbacks, and local state have clear ownership; no mirrored bindings or constant editable fallbacks
+- [ ] Each callback serves a concrete consumer need; no redundant state notifications, speculative hooks, or workflow closure collections
 - [ ] Foundation 3: Focused `init`; environment keys only for inherited settings
 - [ ] Foundation 4: Reuses suitable system controls; subviews extracted where responsibilities warrant it
 - [ ] Foundation 5: `public` only consumer API; doc comment with example

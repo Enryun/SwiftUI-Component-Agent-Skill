@@ -41,11 +41,11 @@ Every piece of state has exactly one owner. Never duplicate source of truth.
 
 | Owner | Holds |
 |-------|--------|
-| **Parent** (`Binding`) | Text, selection, `isValid`, values that enable Submit / navigation |
+| **Parent** (value or `Binding`) | Values for read-only inputs; Binding for text or selection the component edits |
 | **Component** (`@State` private) | `hasInteracted`, animation phase, internal toggle (e.g. show password) |
 | **Environment** | Optional modifiers, theme, feature flags |
 
-**Rule:** If the parent must react, expose a `Binding`. If only the control’s UI cares, keep `@State` private. Optional bindings use safe defaults (`?? .constant(true)`).
+**Rule:** Use values for read-only inputs, Binding for two-way edits to parent-owned state, and focused callbacks for actions or notifications. Keep component-owned transient state private. Derive results where practical; do not mirror bindings into local state or use constant bindings as editable fallbacks.
 
 See [state-ownership.md](state-ownership.md).
 
@@ -120,13 +120,12 @@ Customization is **explicit**:
 
 - Appearance → standard modifiers, styles, or Config with defaults as appropriate.
 - Behavior → focused parameters or modifiers; inherited options use documented environment defaults.
-- Outcomes → optional `Binding` with fallback when parent does not care.
+- Actions and notifications → focused callbacks when needed; Binding only for genuine two-way editing.
 
 ```swift
 public init(
     title: String,
     text: Binding<String>,
-    isValid: Binding<Bool>? = nil,
     config: Config = .init()  // all sub-configs also default
 ) { … }
 ```

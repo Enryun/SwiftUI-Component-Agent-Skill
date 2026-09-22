@@ -24,7 +24,7 @@ Review **all six principles**, choosing mechanisms appropriate to the component.
 | # | Foundation | One-line rule |
 |---|------------|----------------|
 | 1 | **Separate what it is from how it looks** | Keep behavior independent of app branding; choose standard modifiers, styles, or Config as needed |
-| 2 | **Own state deliberately** | Parent `Binding` for outcomes; `@State` private for UI-only; Environment for modifiers |
+| 2 | **Own state deliberately** | Values for read-only inputs, Binding for parent-owned edits, callbacks for events; one source of truth |
 | 3 | **Focused initialization and customization** | Keep required inputs explicit; choose modifiers for useful options, environment only for inherited settings |
 | 4 | **Composition, not inheritance** | Prefer suitable system controls; extract subviews for meaningful responsibilities, not a line-count limit |
 | 5 | **Stable, discoverable public API** | Minimal `public` surface; consistent names; doc comment with one example |
@@ -33,6 +33,8 @@ Review **all six principles**, choosing mechanisms appropriate to the component.
 **Revise designs that violate a principle**, not designs that omit an unnecessary Config, environment key, or helper type. Explain which mechanisms fit the component in the proposal.
 
 **Enforce principles; prefer established patterns when their conditions hold.** Start with suitable system controls and standard styling. Prefer nested Config for grouped component-specific appearance, focused modifiers for optional customization, environment keys for inherited settings, and subviews for distinct responsibilities. Briefly justify meaningful departures; do not treat all alternatives as equally suitable.
+
+**Keep callbacks purposeful:** add optional callbacks only for a concrete consumer need that existing values, bindings, or derived results cannot satisfy. Reject redundant state notifications, callbacks for every internal change, and collections of workflow closures. If callbacks multiply, review responsibilities before introducing event enums or callback containers. See [state-ownership.md](references/state-ownership.md#closures-without-overuse).
 
 ## Additional non-negotiables
 
@@ -45,8 +47,10 @@ Review **all six principles**, choosing mechanisms appropriate to the component.
 
 ```
 Building a reusable control?
-├─ Parent must react (submit enabled, form valid, selection)?
-│  └─ Expose Binding (optional Binding with .constant fallback for simple cases)
+├─ Data crosses the component boundary?
+│  ├─ Read-only input → value
+│  ├─ Edit parent-owned state → Binding
+│  └─ Action or result notification → focused callback when needed
 ├─ Customization at call site?
 │  ├─ Few per-instance options → direct parameters or ordinary modifiers
 │  ├─ Related appearance settings → Config or an existing style API
@@ -76,7 +80,7 @@ Full step-by-step checklists: **[scaffold-workflow.md](references/scaffold-workf
 
 1. Name + one-sentence responsibility  
 2. Behavior spec + edge cases  
-3. **State map** (Binding / `@State` / Environment)  
+3. **Data-flow map** (values / Binding / callbacks / local state / Environment)
 4. **Public API** — focused init, Config/styles/modifiers only where useful  
 5. **Composition plan** — system controls + subview names  
 6. **Six foundations review** — all six answers ([six-foundations.md](references/six-foundations.md))  
@@ -112,7 +116,7 @@ Full gate: [scaffold-workflow.md § Phase 3](references/scaffold-workflow.md#pha
 **Six foundations**
 
 - [ ] **1** Appearance API fits the component; no dependency on app-specific brand assets
-- [ ] **2** State map documented — bindings vs `@State` vs Environment
+- [ ] **2** Data flow documented; one owner, no mirrored bindings or constant editable fallbacks
 - [ ] **3** Required inputs are clear; customization mechanisms are justified, without a numeric parameter limit
 - [ ] **4** Composed from system controls + private subviews — not monolithic
 - [ ] **5** `public` surface minimal; doc comment with one example
@@ -132,7 +136,7 @@ Full gate: [scaffold-workflow.md § Phase 3](references/scaffold-workflow.md#pha
 public init(title:text:isValid:isSecured:showBorder:borderColor:…)
 
 // GOOD
-public init(title: String, text: Binding<String>, isValid: Binding<Bool>? = nil, config: Config = .init())
+public init(title: String, text: Binding<String>, config: Config = .init())
 // + optional modifiers; use EnvironmentKey only if subtree inheritance is intended
 ```
 

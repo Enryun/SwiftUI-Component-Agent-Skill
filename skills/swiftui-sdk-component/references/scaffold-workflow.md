@@ -27,7 +27,7 @@ Output a single **proposal document** in the chat (or PR description). Wait for 
 
 ### 1.2 Behavior spec
 
-- [ ] **Inputs** — what the parent provides (bindings, callbacks, config)
+- [ ] **Inputs** — read-only values, editable bindings, strategy closures, config
 - [ ] **Outputs** — what the parent learns (validity, selection, events)
 - [ ] **User interactions** — tap, drag, focus, secure toggle, clear
 - [ ] **Edge cases** — empty, mandatory, first paint, disabled, error display rules
@@ -40,7 +40,7 @@ List every piece of state:
 | Property / concern | Owner | Type | Notes |
 |--------------------|--------|------|-------|
 | e.g. `text` | Parent | `Binding<String>` | |
-| e.g. `isValid` | Parent | `Binding<Bool>?` | default `.constant(true)` |
+| e.g. validation result | Derived from text and rules | Value; focused notification if needed | identify who computes it |
 | e.g. `hasInteracted` | Component | `@State private` | |
 | e.g. `isMandatory` | Environment | modifier | |
 
@@ -52,7 +52,6 @@ List every piece of state:
 init(
   title: String,
   text: Binding<String>,
-  isValid: Binding<Bool>? = nil,
   config: Config = .init()
 )
 ```
@@ -73,7 +72,10 @@ init(
 
 **Callbacks (if any)**
 
-- [ ] Prefer `Binding` for state; use closures for one-shot events (`onCommit`, `onRequestPermission`)
+- [ ] Values for read-only inputs, Binding for two-way edits, focused closures for actions/results
+- [ ] Distinguish input strategies from output notifications; avoid callbacks for every internal change
+- [ ] Each callback has a concrete consumer need and documented timing; no redundant Binding notifications or workflow closure collections
+- [ ] If callbacks multiply or pass through uninvolved subviews, review responsibilities before adding an event enum or callback container
 
 ### 1.5 Composition plan (foundation #4)
 
@@ -170,7 +172,7 @@ File: `{Name}.swift` (under `Public/` if package uses it)
 
 - [ ] `public struct {Name}: View`
 - [ ] `init` matches approved API exactly
-- [ ] `@Binding` + optional binding fallbacks
+- [ ] Bindings edit parent-owned state; no mirrored local copy or constant editable fallback
 - [ ] `@State private` only for UI-only state from state map
 - [ ] `@Environment` only for intentionally inherited settings
 - [ ] Prefer suitable system controls; justify custom implementations when needed
