@@ -1,0 +1,35 @@
+import SwiftUI
+import {ModuleName}
+
+struct {ComponentName}TestView: View {
+    @State private var defaultValue = ""
+    @State private var styledValue = "Styled text"
+    @State private var countedValue = "Count me"
+    @State private var overriddenValue = "Count hidden"
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                {ComponentName}(title: "Default", value: $defaultValue)
+
+                {ComponentName}(title: "Custom appearance", value: $styledValue)
+                    .font(.headline)
+                    .foregroundColor(.blue)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    {ComponentName}(title: "Inherited count", value: $countedValue)
+                    {ComponentName}(title: "Local override", value: $overriddenValue)
+                        .{componentName}ShowsCharacterCount(false)
+                }
+                .{componentName}ShowsCharacterCount()
+            }
+            .padding()
+        }
+    }
+}
+
+struct {ComponentName}TestView_Previews: PreviewProvider {
+    static var previews: some View {
+        {ComponentName}TestView()
+    }
+}

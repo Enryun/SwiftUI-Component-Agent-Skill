@@ -16,11 +16,13 @@ Use the **swiftui-sdk-component** skill when adding or changing reusable control
 5. Stable public API → minimal `public`, doc example
 6. Sensible defaults → zero-config works; sample “Default” section
 
-Propose API + **foundation review** + file tree before creating files.
+Inspect the host and explain material API decisions. Proceed with authorized implementation; stop only for proposal-only work or unresolved material decisions. Do not add routine approval checkpoints.
 
 Review all principles without requiring identical artifacts. Config types, environment keys, and helper subviews are optional tools. Parameter counts and body length are review signals, not limits. Required content and actions are valid initializer inputs; preserve compatible public APIs.
 
 Enforce the principles and apply preferred patterns when their conditions hold: standard controls/styling first, nested Config for grouped component-specific appearance, focused modifiers for optional customization, environment for inherited settings, and subviews for distinct responsibilities. Briefly justify meaningful departures.
+
+Scope global modifiers to the component family; ensure every setting has a consumer. Preserve platform/toolchain constraints and compatible public API. Avoid obvious descriptive comments. Verify public usage from a consumer target and report unperformed checks. Do not perform releases or version bumps unless requested. Swift templates are bundled inside the skill at `templates/swift/`.
 
 ## Not for app screens
 

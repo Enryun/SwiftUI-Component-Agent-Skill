@@ -1,34 +1,32 @@
 # UX edge cases
 
-Treat these as part of the public contract, not polish.
+Apply only the sections relevant to the component. These are examples of interaction contracts, not requirements to add validation or text-field behavior to every control.
 
 ## Validation timing
 
-**Defer errors** for empty mandatory fields until the user has interacted, when the design calls for a neutral first paint:
+For components that validate input, separate the validation result from error visibility. Hiding an error must not mark invalid input as valid. Choose error timing to fit the interaction: editing, leaving the field, or a submit attempt.
+
+Example for a required field whose only rule is nonempty input; `shouldRevealErrors` comes from the chosen interaction policy:
 
 ```swift
-private func validate(_ value: String, shouldDeferEmptyMandatory: Bool = false) {
-    if shouldDeferEmptyMandatory && isMandatory.0 && value.isEmpty && !hasInteracted {
-        isValid = true
-        validationMessage = ""
-        return
-    }
-    // … full validation
+private var isValid: Bool { !text.isEmpty }
+
+private var visibleError: String? {
+    shouldRevealErrors && !isValid ? "Required" : nil
 }
 ```
 
-Set `hasInteracted = true` on first `onChange` of bound text.
+Use the actual validation result for decisions that require validity. An optional empty field follows its own rules. If validation is deferred or asynchronous, do not assume an unevaluated or pending result means valid. This distinction does not require a new public type or callback.
 
-## States
+### Example presentation states
 
 Distinguish:
 
-| State | UI |
-|-------|-----|
-| Empty, not yet touched | Neutral border, no error copy |
-| Empty, mandatory, touched | Invalid + message |
-| Invalid rule | Invalid + specific message |
-| Valid with hint | Valid border + success/hint copy |
+| Condition | Validation result | Presentation |
+|-----------|-------------------|--------------|
+| Required, empty, before error-reveal trigger | Invalid | Neutral appearance, no error copy |
+| Required, empty, after error-reveal trigger | Invalid | Error appearance and message |
+| Meets the applicable rules | Valid | Normal appearance or success feedback if useful |
 
 ## Secure fields
 

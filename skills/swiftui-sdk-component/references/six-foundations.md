@@ -59,10 +59,8 @@ See [state-ownership.md](state-ownership.md).
 // BAD — mixes required inputs with many unrelated customization options
 init(..., isMandatory: Bool, mandatoryMessage: String, showClear: Bool, …)
 
-// PREFERRED — focused init with optional customization (illustrative call shape)
+// PREFERRED — focused init with coherent grouped appearance
 init(title: String, text: Binding<String>, config: Config = .init())
-    .isMandatory(true)
-    .clearButtonHidden(false)
 ```
 
 **Init typically holds:** required data, bindings, actions/content, and optional Config when useful.  
@@ -106,7 +104,7 @@ Consumers learn the component from **names**, **small surface**, and **doc comme
 - `internal` / `private`: helpers, window managers, layout math, ViewModels.
 - Follow existing public naming conventions; use `{Name}.Config` and `{Name}+EnvironmentKey.swift` when those mechanisms exist.
 - One compilable usage example in the type’s doc comment.
-- Avoid breaking renames without a major version bump.
+- Preserve existing public names; breaking changes require an authorized migration. Version bumps and releases are separate requested work.
 
 See [shipping.md](shipping.md), [documentation.md](documentation.md), [folder-structure.md](folder-structure.md).
 
@@ -130,13 +128,13 @@ public init(
 ) { … }
 ```
 
-**Test:** In the sample view, the first section is always “Default” with no modifiers.
+**Check:** Demonstrate basic use without styling setup in the host's existing sample or preview arrangement.
 
 ---
 
-## Foundation review (use in Phase 1)
+## Foundation review
 
-Before approval, confirm in the proposal:
+Review these questions when designing the API; communicate the decisions relevant to the change:
 
 | # | Question |
 |---|----------|

@@ -1,0 +1,39 @@
+import SwiftUI
+
+/// An editable text field with an optional character count.
+///
+/// Counts are hidden by default; use `{componentName}ShowsCharacterCount(_:)`
+/// on this field or an ancestor to display them.
+///
+/// ```swift
+/// struct ExampleView: View {
+///     @State private var text = ""
+///
+///     var body: some View {
+///         {ComponentName}(title: "Name", value: $text)
+///     }
+/// }
+/// ```
+public struct {ComponentName}: View {
+    private let title: String
+    @Binding private var value: String
+    @Environment(\.{componentName}ShowsCharacterCount) private var showsCharacterCount
+
+    public init(title: String, value: Binding<String>) {
+        self.title = title
+        self._value = value
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            TextField(title, text: $value)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+
+            if showsCharacterCount {
+                Text("Characters: \(value.count)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}

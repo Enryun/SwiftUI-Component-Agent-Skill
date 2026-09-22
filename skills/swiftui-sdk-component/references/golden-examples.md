@@ -1,31 +1,30 @@
-# Golden examples
+# Reference examples
 
-Patterns below are illustrated in [CommonSwiftUI](https://github.com/Enryun/Common_SwiftUI). When working in that repo, **read these files** instead of re-deriving conventions.
+[CommonSwiftUI](https://github.com/Enryun/Common_SwiftUI) supplies useful examples, not normative implementations. When available locally, inspect the current source and nearby usage before borrowing a pattern. Locate files by name; paths and APIs may change.
 
-| Pattern | Reference |
-|---------|-----------|
-| Config + Binding + validation deferral | `ValidationTextField.swift` |
-| EnvironmentKey modifiers | `ValidationTextField+EnvironmentKey.swift` |
-| Alert configuration object | `UniversalAlertConfig.swift` |
-| Internal view + public entry | `Toast` / `ToastView` (internal) |
-| iOS 16 vs 15 styling branch | `ToastView.swift` (`apply` + `#available`) |
-| Shimmer / modifier-based API | `ShimmerView`, shimmer modifiers |
-| Sample app usage | `SampleCode/SampleCode/TextField/`, `Alert/`, etc. |
+| Pattern to inspect | Reference |
+|--------------------|-----------|
+| Generic Shape/ShapeStyle customization using a standard ButtonStyle | ShapeButtonStyle.swift, LoadingButtonStyle.swift |
+| Caller-built content behind a public modifier and internal presentation | UniversalAlertView+ViewModifier.swift, UniversalAlertView.swift |
+| Grouped appearance and editable text Binding | ValidationTextField.swift |
+| Inherited settings and their consumers | ValidationTextField+EnvironmentKey.swift |
+| Alert configuration and presentation ownership | UniversalAlertConfig.swift |
+| Internal implementation behind a public entry point | Toast / ToastView |
+| Existing availability helper conventions | ToastView.swift |
+| Direct modifier API | ShimmerView and shimmer modifiers |
+| Consumer integration | Existing TextField and Alert sample screens |
 
-## What to copy
+## Evaluate before copying
 
-- Doc comment with full usage example (`ValidationTextField`)
-- Text Binding for parent-owned editable input (same file)
-- `FormValidationElement` for multi-rule checklist UI (same file)
-- `private(set)` on config nested types (same file)
+For the design lessons behind styles, content slots, and public effect APIs, read [composition.md](composition.md).
 
-## What not to copy blindly
+- Copy the useful boundary or interaction, not every type and file.
+- Distinguish appearance data from presentation state and actions; a legacy Config name does not establish correct ownership.
+- Check that modifier names and scope fit the new component. Broad legacy names are not a naming recommendation.
+- Do not copy output bindings with constant fallbacks or mirrored state synchronization; use [state-ownership.md](state-ownership.md).
+- Do not copy validation deferral that marks untouched required input valid; see [ux-edge-cases.md](ux-edge-cases.md).
+- Verify that helpers such as `.apply` exist in the destination package and that sample APIs support its deployment targets.
+- Use correct spelling for new APIs, but preserve existing public names, including legacy typos, unless a migration is authorized.
+- Compile documentation examples rather than assuming they are complete.
 
-- Optional output bindings with constant fallbacks or mirrored `@State` synchronization — follow [state-ownership.md](state-ownership.md); preserve existing APIs until migration is agreed
-
-- Typos in legacy names (`HambugMenu`) — fix when touching, do not propagate
-- Inconsistent naming across old components — follow this skill’s naming table instead
-
-## Other packages
-
-When authoring outside CommonSwiftUI, apply the same **principles** and adapt folder paths to the host package layout. Choose Config and EnvironmentKey only where the component needs them; the examples do not make those mechanisms mandatory.
+If the source repository is unavailable, use the bundled references and templates. Do not invent claims about its current implementation or block unrelated component work on access to it.

@@ -55,17 +55,17 @@ public struct PinCodeField: View { … }
 // internal: PinCodeFieldViewModel
 ```
 
-## EnvironmentKey without default
+## Environment settings without a meaningful contract
 
 ```swift
-// BAD
-struct MyKey: EnvironmentKey {
-    static var defaultValue: String?  // nil forces optional handling everywhere
-}
+// BAD — broad name with no clear component scope or consumer
+func exampleFeatureEnabled(_ enabled: Bool) -> some View { self }
 
-// GOOD — explicit default matching “off” behavior
-static var defaultValue: Bool = true  // e.g. clear button hidden by default
+// GOOD — a scoped setting, documented default, and a component that reads it
+// See the paired component and environment templates.
 ```
+
+A nil default is valid when absence has defined meaning. Do not replace meaningful optional values merely to avoid optional handling.
 
 ## Validation on every keystroke without need
 
@@ -77,7 +77,7 @@ For expensive validation (regex, network), debounce or validate on submit/blur u
 // BAD — navigates to settings, calls API singleton
 Button("Fix") { UIApplication.shared.open(settingsURL) }
 
-// GOOD — callback or Binding
+// GOOD — a focused action request, when the component needs this capability
 var onRequestPermission: (() -> Void)?
 ```
 

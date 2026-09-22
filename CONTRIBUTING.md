@@ -21,7 +21,9 @@ Thanks for helping improve this Agent Skills package. Keep contributions focused
 
 - Every `SKILL.md` must have valid YAML `name` and `description` frontmatter.
 - Keep `SKILL.md` concise (<500 lines); put depth in `references/`.
-- Preserve **recommend-first** behavior: propose API and file tree before creating files.
+- Preserve scope-aware workflow: explain material API decisions and proceed with authorized implementation; stop for proposal-only requests or unresolved material decisions.
+- Keep templates inside the installed skill and verify generated library and consumer code separately.
+- Avoid comments that restate obvious code; document contracts and non-obvious reasons.
 - Generalize examples — avoid names tied to a single commercial app.
 
 ## Pull requests

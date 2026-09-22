@@ -40,11 +40,13 @@ mkdir -p .cursor/skills
 cp -R skills/swiftui-sdk-component .cursor/skills/
 ```
 
-Optional: copy [`templates/component.mdc`](templates/component.mdc) to `.cursor/rules/` for always-on reminders in that repo.
+Optional: copy [`templates/component.mdc`](templates/component.mdc) to `.cursor/rules/` as an opt-in rule (`alwaysApply: false`).
 
 ### Claude Code / Codex / other tools
 
 Copy `skills/swiftui-sdk-component/` into your tool's skills directory. The skill format is portable; only the install path differs.
+
+The skill folder includes its Swift templates and all references; no sibling repository folders are required. See [template instructions](skills/swiftui-sdk-component/templates/README.md).
 
 ## Included skill
 
@@ -61,10 +63,10 @@ SwiftUI-Component-Agent-Skill/
 ├── AGENTS.md
 ├── skills/swiftui-sdk-component/
 │   ├── SKILL.md                 # Agent entrypoint
-│   └── references/              # Detailed specs
+│   ├── references/              # Detailed guidance
+│   └── templates/               # Installed Swift scaffolds and instructions
 └── templates/
-    ├── component.mdc            # Optional Cursor rule template
-    └── swift/                   # File scaffolds
+    └── component.mdc            # Optional Cursor rule template
 ```
 
 ## The six foundations
@@ -82,11 +84,11 @@ Review all six principles, choosing implementations appropriate to the component
 
 | Phase | What happens |
 |-------|----------------|
-| **1 — Propose** | API, state map, six foundations review, file tree, sample plan — **no code yet** |
-| **2 — Implement** | Selected mechanisms in dependency order → docs → sample (only after you approve) |
-| **3 — Review** | Foundations + build sample before merge |
+| **1 — Design** | Inspect host conventions and explain material API/ownership decisions |
+| **2 — Implement** | Implement the authorized scope, docs, and relevant sample usage |
+| **3 — Review** | Verify foundations, compatibility, consumer usage, and relevant behavior |
 
-Phases exist because `public` SDK APIs are expensive to change; aligning first avoids giant inits and missing samples.
+Scale the workflow to the change. An implementation request already authorizes ordinary work; stop for proposal-only requests or unresolved material decisions. Preserve existing public APIs and avoid unsolicited releases. The quick-start prompt above explicitly requests an approval pause; that pause is not required for every task.
 
 - Summary: [`SKILL.md`](skills/swiftui-sdk-component/SKILL.md)
 - **Full checklists:** [`references/scaffold-workflow.md`](skills/swiftui-sdk-component/references/scaffold-workflow.md)
